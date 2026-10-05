@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pollutant Standards Index | Singapore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .status {
+            text-align:center;
+            font-size:18px;
+            margin-bottom:20px;
+            color:#73b848;
+            font-weight:bold;
+        }
+        table {
+            width:100%;
+            border-collapse: collapse;
+            margin-bottom:20px;
+        }
+        th {
+            background-color:#73b848;
+            color:white;
+            padding:10px;
+            text-align:left;
+            border:1px solid #000000;
+        }
+        td {
+            padding:9px;
+            border:1px solid #000000;
+        }
+        button {
+            padding:8px 16px;
+            cursor:pointer;
+            display:block;
+            margin:0 auto 20px auto;
+            background-color:#73b848;
+            color:white;
+            border:none;
+            border-radius:3px;
+        }
+        button:hover{
+            background-color:#5c9438;
+        }
+        .footer {
+            margin-top:20px;
+            font-size:14px;
+            color:#444;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pollutant Standards Index</h1>
+    <h2>Singapore</h2>
+    <div class="status">Status : Healthy</div>
+
+    <table id="psiTable">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>central</th>
+                <th>west</th>
+                <th>east</th>
+                <th>north</th>
+                <th>south</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <button id="refreshBtn">Refresh</button>
+    <div class="footer" id="footerText"></div>
+
+<script>
+const apiUrl = "https://api-open.data.gov.sg/v2/real-time/api/psi";
+const tableBody = document.querySelector("#psiTable tbody");
+const refreshBtn = document.getElementById("refreshBtn");
+const footerText = document.getElementById("footerText");
+
+const metricList = [
+    "o3_sub_index",
+    "pm10_twenty_four_hourly",
+    "pm10_sub_index",
+    "co_sub_index",
+    "pm25_twenty_four_hourly",
+    "so2_sub_index",
+    "co_eight_hour_max",
+    "no2_one_hour_max",
+    "so2_twenty_four_hourly",
+    "pm25_sub_index",
+    "psi_twenty_four_hourly",
+    "o3_eight_hour_max"
+];
+
+async function fetchPSI() {
+    try{
+        const res = await fetch(apiUrl);
+        const jsonData = await res.json();
+        const item = jsonData.data.items[0];
+        const readings = item.readings;
+        const timestamp = item.timestamp;
+
+        tableBody.innerHTML = "";
+        metricList.forEach(metricName => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${metricName}</td>
+                <td>${readings[metricName].central}</td>
+                <td>${readings[metricName].west}</td>
+                <td>${readings[metricName].east}</td>
+                <td>${readings[metricName].north}</td>
+                <td>${readings[metricName].south}</td>
+            `;
+            tableBody.appendChild(row);
+        })
+        footerText.innerText = `Updated at: ${timestamp}\nSource: Singapore Government Agency`;
+    }catch(err){
+        console.error("API Fetch Error",err);
+        alert("Failed to load data");
+    }
+}
+
+refreshBtn.addEventListener("click", fetchPSI);
+fetchPSI();
+</script>
+</body>
+</html>
